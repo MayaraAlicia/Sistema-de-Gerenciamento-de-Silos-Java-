@@ -2,12 +2,46 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 class Silo {
-    public String grao;
-    public int id;
-    public float quantidadeAtualKg;
-    public float quantidadeMaxKg;
-    public float porcentagem;
+    private int id;
+    private String grao;
+    private float quantidadeAtualKg;
+    private float quantidadeMaxKg;
+    
+    public Silo (int id, String grao, float quantidadeMaxKg){
+        this.id = id;
+        this.grao = grao;
+        this.quantidadeMaxKg = quantidadeMaxKg;
+        this.quantidadeAtualKg = 0;
+    }
+    
+    public int getId() {return id;}
+    public String getGrao() {return grao;}
+    public float getQuantidadeAtualKg() {return quantidadeAtualKg;}
+    public float getQuantidadeMaxKg() {return quantidadeMaxKg;}
+    private float porcentagem;
+    
+    public boolean adicionar (float quantidade){
+        if (this.quantidadeAtualKg + quantidade > quantidadeMaxKg){
+            return false;
+        }
+        this.quantidadeAtualKg += quantidade;
+        return true;
+    }
+    
+    public boolean remover (float quantidade){
+        if (this.quantidadeAtualKg - quantidade < 0){
+            return false;
+    }
+    this.quantidadeAtualKg -= quantidade;
+    return true;}
+    
+    public float calcularPorcentagem(){
+        if (quantidadeMaxKg == 0)return 0;
+        return (quantidadeAtualKg/quantidadeMaxKg) * 100;
+    }
 }
+
+
 
 public class Main
 {
@@ -17,22 +51,11 @@ public class Main
 	    Scanner scanner = new Scanner (System.in);
 	    boolean continuar = true;
 		ArrayList<Silo> graosCadastrados = new ArrayList<>();
-		Silo s1 = new Silo();
-		s1.id = proximoId;
-		s1.grao = "milho";
-		s1.quantidadeAtualKg = 0;
-		s1.quantidadeMaxKg = 100;
-		graosCadastrados.add(s1);
 		
-		proximoId ++;
-		
-		Silo s2 = new Silo ();
-		s2.id = proximoId;
-		s2.grao = "soja";
-		s2.quantidadeAtualKg = 10;
-		s2.quantidadeMaxKg = 150;
+		graosCadastrados.add(new Silo(proximoId++, "Milho", 100));
+		Silo s2 = new Silo (proximoId++, "Soja", 150);
+		s2.adicionar(10);
 		graosCadastrados.add(s2);
-		proximoId++;
 		
 		while (continuar) {
 		    System.out.println("--- Meus Silos ---");
@@ -51,82 +74,58 @@ public class Main
 		    else if (escolha.equals("1")){
 		        System.out.println("Silos registrados: ");
 		        for (Silo s : graosCadastrados) {
-		            s.porcentagem = (s.quantidadeAtualKg/s.quantidadeMaxKg) * 100;
-		            System.out.println("Grão: " + s.grao + " | Quantidade: " + s.quantidadeAtualKg + "| Lotação: " + s.porcentagem + "%");
-		            if (s.porcentagem > 90) {
-		                System.out.println("Silo próximo a lotação maxima");
-		            }
-		            else if (s.porcentagem < 10) {
-		                System.out.println("Silo necessitando de reposição");
-		            }
-		            
-		        }
+		            System.out.printf("ID: %d | %s | %.1f Kg (%.1f%%)\n",
+		                s.getId(), s.getGrao(), s.getQuantidadeAtualKg(), s.calcularPorcentagem());
 		    }
-		  else if (escolha.equals("2")) {
-		      Silo novo = new Silo();
-		      
-		      novo.id = proximoId;
-		      proximoId ++;
-		      
+		    }
+		    
+		    
+		    else if (escolha.equals("2")) {
 		      System.out.println("Digite o nome do grão: ");
-		      novo.grao = scanner.nextLine();
+		      String nome = scanner.nextLine();
 		      System.out.println("Quantidade maxima em kg suportado pelo silo: ");
-		      novo.quantidadeMaxKg = Float.parseFloat(scanner.nextLine());
+		      float max = Float.parseFloat(scanner.nextLine());
 		      
-		      novo.quantidadeAtualKg = 0;
-		      
-		      graosCadastrados.add(novo);
-		      System.out.println("Silo [" + novo.id + "] cadastrado com sucesso!");
+		      graosCadastrados.add(new Silo (proximoId++, nome, max));
+		      System.out.println("Silo cadastrado com sucesso!");
 		      
 		  }
 		  else if (escolha.equals("3")) {
 		      
-		      for (Silo s : graosCadastrados){
-		          System.out.println("[" + s.id + "] - " + s.grao);
-		      }
 		      System.out.println("Digite o ID do silo que deseja alterar: ");
 		      int idBusca = Integer.parseInt(scanner.nextLine());
 		      
-		      Silo siloEncontrado = null;
+		      Silo encontrado = null;
 		      
 		      for (Silo s : graosCadastrados){
-		          if (s.id == idBusca){
-		              siloEncontrado = s;
+		          if (s.getId() == idBusca){
+		              encontrado = s;
 		              break;
 		          }
 		      }
 		      
-		      if (siloEncontrado != null){
-		          System.out.println("Silo selecionado: " + siloEncontrado.grao);
+		      if (encontrado != null){
+		          System.out.println("Silo selecionado: " + encontrado.getGrao());
 		          System.out.println("1. Adicionar | 2. Retirar");
 		          String acao = scanner.nextLine();
+		          System.out.println("Quantidade: ");
+		          float qtd = Float.parseFloat(scanner.nextLine());
 		          
 		          if (acao.equals("1")){
-		              System.out.println("Quantos quilos deseja adicionar? ");
-		              float kgAdicionar = Float.parseFloat(scanner.nextLine());
-		              
-		              if (kgAdicionar + siloEncontrado.quantidadeAtualKg > siloEncontrado.quantidadeMaxKg){
-		                  System.out.println("Essa quantidade é acima do limite permitido, o silo não suporta esse volume!");
+		              if (encontrado.adicionar(qtd)){
+		                  System.out.println("Adicionado com sucesso!");
 		              }
-		              
 		              else{
-		              
-    		              siloEncontrado.quantidadeAtualKg = siloEncontrado.quantidadeAtualKg + kgAdicionar;
-    		              System.out.println("Sucesso! o silo agora possui " + siloEncontrado.quantidadeAtualKg + "Kg.");
+		                  System.out.println("Erro: O silo vai transbordar!");
     		              }
 		          }
 		          
 		          else if (acao.equals("2")) {
-		              System.out.println ("Quantos quilos deseja subtrair? ");
-		              float kgSubtrair = Float.parseFloat(scanner.nextLine());
-		              
-		              if (siloEncontrado.quantidadeAtualKg - kgSubtrair < 0){
-		                  System.out.println("Erro! Essa quantidade faria o silo ficar com quantidade negativa de grãos.");
+		              if (encontrado.remover(qtd)){
+		                  System.out.println("Removido com sucesso!");
 		              }
-		              
 		              else{
-    		              siloEncontrado.quantidadeAtualKg = siloEncontrado.quantidadeAtualKg - kgSubtrair;
-    		              System.out.println("Sucesso! o silo agora possui " + siloEncontrado.quantidadeAtualKg + "Kg.");
+		                  System.out.println("Erro: Não há grãos suficientes.");
 		              }
 		          }
 		          
@@ -149,6 +148,7 @@ public class Main
 		  }
 		  
 		    }
+		    scanner.close();
 		}
 	}
 
